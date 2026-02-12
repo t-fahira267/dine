@@ -1,10 +1,12 @@
-# Data analysis
-- Document here the project: dine
-- Description: Project Description
-- Data Source:
-- Type of analysis:
+# DINE: Dish Image Nutrition Estimator
+Computer vision for your nutrition
 
-Please document the project the better you can.
+- Project name: `dine`
+- Description: Estimate nutritional information from image of a meal
+- Data Source: https://huggingface.co/datasets/Codatta/MM-Food-100K
+- Type of analysis: Computer Vision
+
+---
 
 # Startup the project
 
