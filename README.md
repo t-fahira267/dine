@@ -73,3 +73,73 @@ mkdir tmp
 cd tmp
 dine-run
 ```
+
+# GCP
+
+## Bucket Location
+
+```
+gs://dine-mmfood/mmfood100k/v1/
+```
+
+Region: asia-northeast1 (Tokyo)
+
+## Dataset Structure
+
+```
+mmfood100k/v1/
+  images/
+    sushi/
+    ramen/
+  labels.csv
+```
+
+**`images/`**
+
+Contains downloaded images grouped by canonical dish label.
+
+```
+images/sushi/000001.jpg
+images/ramen/000001.jpg
+```
+
+**`labels.csv`**
+
+Format:
+```
+image_path	label
+images/sushi/000001.jpg	sushi
+images/ramen/000001.jpg	ramen
+```
+
+Notes:
+
+- image_path is relative to the root of v1/
+
+- Labels are lowercase and standardized
+
+## How to upload to GCP
+
+1. Login and configure the project
+
+```
+gcloud auth login
+gcloud config set project wagon-bootcamp-484602
+```
+
+2. Check you can reach the bucket
+
+```
+gsutil ls gs://dine-mmfood/
+```
+
+3. Download the images
+```
+python scripts/download_subset.py
+```
+
+4. Upload files
+
+```
+gsutil -m cp -r data/mmfood100k/v1 gs://dine-mmfood/mmfood100k/
+```
