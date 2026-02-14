@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Dine</h1>
+
+    <div class="card">
+
+        <!-- Photo button -->
+        <input type="file" id="imageInput" accept="image/*" capture="environment">
+
+        <!-- Image Preview -->
+        <img id="preview" src="" alt="Preview">
+
+        <!-- Component input -->
+        <input type="number" id="portionInput" placeholder="Enter portion (g)" min="1" value="100">
+
+        <!-- Analysis button -->
+        <button onclick="analyzeFood()">Analyze</button>
+
+    </div>
+
+    <div class="result-card" id="resultCard" style="display:none;">
+        <h2 id="detectedFood"></h2>
+
+        <h3 id="nutritionTitle"></h3>
+
+        <div class="nutrition-grid">
+            <div>Calories</div><div id="calories"></div>
+            <div>Protein</div><div id="protein"></div>
+            <div>Fat</div><div id="fat"></div>
+            <div>Carbs</div><div id="carbs"></div>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
