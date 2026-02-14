@@ -1,8 +1,9 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
-  # Build API image
   - name: gcr.io/cloud-builders/docker
     args: ["build", "-t", "api:build", "-f", "api/Dockerfile", "."]
 
-  # Build Frontend image
   - name: gcr.io/cloud-builders/docker
     args: ["build", "-t", "frontend:build", "-f", "frontend/Dockerfile", "."]
