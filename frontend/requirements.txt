@@ -31,3 +31,6 @@ termcolor
 # huggingface dataset
 huggingface_hub
 fsspec
+
+streamlit
+requests

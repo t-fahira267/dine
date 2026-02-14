@@ -31,3 +31,10 @@ termcolor
 # huggingface dataset
 huggingface_hub
 fsspec
+
+python-multipart
+fastapi
+uvicorn
+python-multipart
+pandas
+openpyxl
