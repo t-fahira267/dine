@@ -143,3 +143,29 @@ python scripts/download_subset.py
 ```
 gsutil -m cp -r data/mmfood100k/v1 gs://dine-mmfood/mmfood100k/
 ```
+
+## Inference Pipeline
+
+### MVP
+```mermaid
+flowchart LR
+  U([User]) -->|Input image and portion size| UI[UI]
+  UI -->|POST image and portion size| API[Server API]
+
+  subgraph ML_Pipeline
+    direction LR
+    P[Preprocessing]
+    M[Model]
+    P -->|Clean image| M
+  end
+
+  API -->|Send raw image| P
+  M -->|Dish prediction| API
+
+  API -->|Lookup dish nutrition| CSV[(Nutrition CSV mapping)]
+  CSV -->|Nutrition per dish| API
+
+  API -->|Compute nutrition using portion| CALC[Compute nutrition]
+  CALC -->|Final response| UI
+
+  UI -->|Show output| U
