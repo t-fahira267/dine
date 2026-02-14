@@ -12,47 +12,47 @@ imageInput.addEventListener("change", function() {
 
 
 //  real analyze
-// async function analyzeFood() {
-//     const file = imageInput.files[0];
-//     const portion = document.getElementById("portionInput").value;
+async function analyzeFood() {
+    const file = imageInput.files[0];
+    const portion = document.getElementById("portionInput").value;
 
-//     if (!file) {
-//         alert("Please upload a photo.");
-//         return;
-//     }
+    if (!file) {
+        alert("Please upload a photo.");
+        return;
+    }
 
-//     const formData = new FormData();
-//     formData.append("image", file);
-//     formData.append("portion", portion);
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("portion", portion);
 
-//     const response = await fetch("http://localhost:8000/predict", {
-//         method: "POST",
-//         body: formData
-//     });
+    const response = await fetch("http://localhost:8000/predict", {
+        method: "POST",
+        body: formData
+    });
 
-//     const data = await response.json();
+    const data = await response.json();
 
-//     displayResult(data, portion);
-// }
+    displayResult(data, portion);
+}
 
 
 // for test
-function analyzeFood() {
+// function analyzeFood() {
 
-    const fakeData = {
-        dish: "ramen",
-        confidence: 0.92,
-        portion: 200,
-        nutrition: {
-            calories: 520,
-            protein_g: 18,
-            carbs_g: 65,
-            fat_g: 20
-        }
-    };
+//     const fakeData = {
+//         dish: "ramen",
+//         confidence: 0.92,
+//         portion: 200,
+//         nutrition: {
+//             calories: 520,
+//             protein_g: 18,
+//             carbs_g: 65,
+//             fat_g: 20
+//         }
+//     };
 
-    displayResult(fakeData);
-}
+//     displayResult(fakeData);
+// }
 
 
 function displayResult(data) {
