@@ -146,7 +146,7 @@ gsutil -m cp -r data/mmfood100k/v1 gs://dine-mmfood/mmfood100k/
 
 ## Inference Pipeline
 
-### Mermaid diagram (GitHub renders this)
+### MVP
 ```mermaid
 flowchart LR
   U([User]) -->|Input image and portion size| UI[UI]
