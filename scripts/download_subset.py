@@ -1,63 +1,98 @@
 import os
-import requests
-import pandas as pd
-from tqdm import tqdm
-from PIL import Image
 from io import BytesIO
-from datasets import load_dataset
-from params import DISHES, PER_CLASS, OUTPUT_DIR
+import pandas as pd
+import requests
+from PIL import Image
+from tqdm import tqdm
+from params import DISHES, PER_CLASS, OUTPUT_DIR, OUTPUT_FILENAME, LABELS_FILENAME
 
 
-# ----------------------------
-# Helper
-# ----------------------------
-
-def download_image(url, save_path):
+def download_image(url: str, save_path: str, timeout: int = 20) -> None:
+    """
+    Download image bytes from `url`, verify it's a valid image, and save to `save_path`.
+    Raises an exception if download fails or image is invalid.
+    """
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-    response = requests.get(url, timeout=15)
-    response.raise_for_status()
+    r = requests.get(url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0"})
+    r.raise_for_status()
 
-    img = Image.open(BytesIO(response.content)).convert("RGB")
-    img.save(save_path, format="JPEG", quality=90)
+    bio = BytesIO(r.content)
+
+    # verify integrity (requires reopen)
+    Image.open(bio).verify()
+    bio.seek(0)
+
+    Image.open(bio).convert("RGB").save(save_path, format="JPEG", quality=90)
 
 
-# ----------------------------
-# Main
-# ----------------------------
+def load_candidates() -> pd.DataFrame:
+    """
+    Load and normalize OUTPUT_DIR/candidates.csv.
+    Expected columns: dish_name, image_url
+    """
+    path = os.path.join(OUTPUT_DIR, OUTPUT_FILENAME)
+    df = pd.read_csv(path)[["dish_name", "image_url"]].dropna()
 
-print("Loading dataset...")
-dataset = load_dataset("Codatta/MM-Food-100K", split="train")
-df = dataset.to_pandas()
+    df["dish_name"] = df["dish_name"].astype(str).str.strip().str.lower()
+    df["image_url"] = df["image_url"].astype(str).str.strip()
 
-labels_rows = []
+    return df
 
-for dish in DISHES:
-    print(f"\nDownloading {dish}...")
 
-    dish_df = df[df["dish_name"].str.lower() == dish.lower()]
-    dish_df = dish_df.sample(min(PER_CLASS, len(dish_df)), random_state=42)
+def download_subset(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    For each dish in DISHES, download up to PER_CLASS valid images into:
+      OUTPUT_DIR/images/<label>/000000.jpg ...
+    Returns (labels_df, failures_df).
+    """
+    rows, failures = [], []
+    images_root = os.path.join(OUTPUT_DIR, "images")
 
-    label = dish.lower().replace(" ", "_")
+    for dish in [d.strip().lower() for d in DISHES]:
+        label = dish.replace(" ", "_")
+        dish_df = df[df["dish_name"] == dish].sample(frac=1.0, random_state=42).reset_index(drop=True)
 
-    for i, (_, row) in enumerate(tqdm(dish_df.iterrows(), total=len(dish_df))):
-        filename = f"{i:06d}.jpg"
-        save_path = os.path.join(OUTPUT_DIR, "images", label, filename)
+        if dish_df.empty:
+            print(f"⚠️ No candidates for '{dish}'")
+            continue
 
-        try:
-            download_image(row["image_url"], save_path)
+        saved = 0
+        for url in tqdm(dish_df["image_url"], desc=label, total=len(dish_df)):
+            if saved >= PER_CLASS:
+                break
 
-            labels_rows.append({
-                "image_path": f"images/{label}/{filename}",
-                "label": label
-            })
+            filename = f"{saved:06d}.jpg"
+            save_path = os.path.join(images_root, label, filename)
 
-        except Exception as e:
-            print("Failed:", e)
+            try:
+                download_image(url, save_path)
+                rows.append({"image_path": f"images/{label}/{filename}", "label": label})
+                saved += 1
+            except Exception:
+                failures.append({"dish_name": dish, "image_url": url})
 
-# Save labels.csv
-labels_df = pd.DataFrame(labels_rows)
-labels_df.to_csv(os.path.join(OUTPUT_DIR, "labels.csv"), index=False)
+        if saved < PER_CLASS:
+            print(f"⚠️ {label}: only saved {saved}/{PER_CLASS}")
 
-print("\nDone!")
-print(f"Total images: {len(labels_df)}")
+    return pd.DataFrame(rows), pd.DataFrame(failures)
+
+
+def main() -> None:
+    df = load_candidates()
+    labels_df, failures_df = download_subset(df)
+
+    labels_path = os.path.join(OUTPUT_DIR, LABELS_FILENAME)
+    labels_df.to_csv(labels_path, index=False)
+    print(f"\n✅ labels saved: {labels_path} | total images: {len(labels_df)}")
+    if not labels_df.empty:
+        print(labels_df["label"].value_counts())
+
+    if not failures_df.empty:
+        fail_path = os.path.join(OUTPUT_DIR, "failures.csv")
+        failures_df.to_csv(fail_path, index=False)
+        print(f"\n⚠️ failures saved: {fail_path} ({len(failures_df)})")
+
+
+if __name__ == "__main__":
+    main()

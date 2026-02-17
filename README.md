@@ -92,6 +92,7 @@ mmfood100k/v1/
     sushi/
     ramen/
   labels.csv
+  candidates.csv
 ```
 
 **`images/`**
@@ -118,31 +119,29 @@ Notes:
 
 - Labels are lowercase and standardized
 
+**`candidates.csv`**
+
+Cleaned up .csv data that will serve as the unique source of truth
+
 ## How to upload to GCP
 
 1. Login and configure the project
 
 ```
 gcloud auth login
-gcloud config set project wagon-bootcamp-484602
 ```
 
 2. Check you can reach the bucket
 
 ```
-gsutil ls gs://dine-mmfood/
+gsutil ls gs://mmfood
 ```
 
-3. Download the images
+3. Run makefile command (this will cleanup the HuggingFace dataset, download it locally and upload it to GCS)
 ```
-python scripts/download_subset.py
+make dataset
 ```
 
-4. Upload files
-
-```
-gsutil -m cp -r data/mmfood100k/v1 gs://dine-mmfood/mmfood100k/
-```
 
 ## Inference Pipeline
 

@@ -53,3 +53,18 @@ pypi_test:
 
 pypi:
 	@twine upload dist/* -u $(PYPI_USERNAME)
+
+# ----------------------------------
+#      DATASET PIPELINE
+# ----------------------------------
+
+prepare_candidates:
+	@python scripts/prepare_candidates.py
+
+download_subset:
+	@python scripts/download_subset.py
+
+upload_gcs:
+	@python scripts/upload_gcs.py
+
+dataset: prepare_candidates download_subset upload_gcs
