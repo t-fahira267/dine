@@ -21,5 +21,6 @@ steps:
         "--image","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/dine-frontend:$SHORT_SHA",
         "--region","${_REGION}",
         "--platform","managed",
-        "--allow-unauthenticated"
+        "--allow-unauthenticated",
+        "--set-env-vars","API_BASE_URL=${_API_BASE_URL}"
       ]
