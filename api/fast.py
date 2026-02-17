@@ -1,12 +1,20 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import random
+import pandas as pd
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_XLSX_PATH = BASE_DIR / "docs" / "nutrition.xlsx"
+
 
 app = FastAPI(
     title="Nutrition Predictor API",
     description="Mock API for dish recognition and nutrition estimation.",
     version="0.1.0",
 )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,7 +24,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DEFAULT_XLSX_PATH = "docs/nutrition.xlsx"
+
+@app.on_event("startup")
+def load_nutrition_data():
+    df = pd.read_excel(DEFAULT_XLSX_PATH)
+
+    if "dish_name" not in df.columns:
+        raise RuntimeError("Excel must contain 'dish_name' column")
+
+    df.set_index("dish_name", inplace=True)
+    app.state.nutrition = df
+
+    print("Nutrition data loaded successfully")
+
 
 @app.get(
     "/health",
