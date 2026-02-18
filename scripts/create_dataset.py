@@ -1,15 +1,16 @@
 """
 Create dataset as a one-time artifact (or versioned occasionally)
 
-Choose a save method:
+Choose a save method (SAVE_MODE variable in params):
 1. Local
 2. Google Cloud Storage (GCS)
 
 Both will save the following artifacts:
-1. images per class (defined in PER_CLASS variable)
-2. labels (defined in DISHES variable)
+1. Images per class (PER_CLASS variable in params)
+2. Labels (DISHES variable in params), and image path in a tabular CSV file
 """
 
+import os
 import io
 import pandas as pd
 from datasets import load_dataset
@@ -17,15 +18,16 @@ from google.cloud import storage
 
 from params import *
 
+
 def save_local(img, label, filename):
-    save_path = os.path.join(OUTPUT_DIR, "images", label, filename)
+    save_path = os.path.join(BASE_DATA_DIR, "images", label, filename)
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     img.save(save_path, format="JPEG", quality=90)
 
     return f"images/{label}/{filename}"
 
-def save_gcs(img, label, filename, bucket):
 
+def save_gcs(img, label, filename, bucket):
     blob_path = f"images/{label}/{filename}"
 
     buffer = io.BytesIO()
@@ -39,10 +41,14 @@ def save_gcs(img, label, filename, bucket):
 
 
 def create_dataset(save_mode="local"):
+    dataset = load_dataset(
+        "Codatta/MM-Food-100K",
+        split="train"
+    )
 
-    dataset = load_dataset("Codatta/MM-Food-100K", split="train")
     labels_rows = []
 
+    bucket = None
     if save_mode == "gcs":
         storage_client = storage.Client()
         bucket = storage_client.bucket(GCS_BUCKET_NAME)
@@ -82,6 +88,28 @@ def create_dataset(save_mode="local"):
 
     return labels_rows
 
-if __name__ == __main__:
-    labels = create_dataset(save_mode="gcs")
+
+if __name__ == "__main__":
+
+    labels = create_dataset(save_mode=SAVE_MODE)
     labels_df = pd.DataFrame(labels)
+
+    if SAVE_MODE == "local":
+        labels_df.to_csv(
+            os.path.join(BASE_DATA_DIR, "labels.csv"),
+            index=False
+        )
+        print(f"✅ Local dataset created at {BASE_DATA_DIR}.")
+
+    elif SAVE_MODE == "gcs":
+        csv_buffer = io.StringIO()
+        labels_df.to_csv(csv_buffer, index=False)
+        csv_buffer.seek(0)
+
+        bucket = storage.Client().bucket(GCS_BUCKET_NAME)
+        bucket.blob("labels.csv").upload_from_string(
+            csv_buffer.getvalue(),
+            content_type="text/csv"
+        )
+
+        print(f"✅ Dataset uploaded to GCS at {GCS_BUCKET_NAME}.")
