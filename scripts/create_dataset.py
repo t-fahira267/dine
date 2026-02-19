@@ -101,10 +101,22 @@ def create_dataset(save_mode="local"):
 
 if __name__ == "__main__":
 
+    # ---- Pre-check version existence ----
+    if SAVE_MODE == "local":
+        version_path = os.path.join(BASE_DATA_DIR, DATASET_VERSION)
+        if os.path.exists(version_path):
+            raise ValueError(f"Dataset version {DATASET_VERSION} already exists.")
+
+    elif SAVE_MODE == "gcs":
+        bucket = storage.Client().bucket(GCS_BUCKET_NAME)
+        if bucket.blob(f"{DATASET_VERSION}/labels.csv").exists():
+            raise ValueError(f"Dataset version {DATASET_VERSION} already exists in GCS.")
+
+    # ---- Create dataset ----
     labels = create_dataset(save_mode=SAVE_MODE)
     labels_df = pd.DataFrame(labels)
 
-    # Create metadata for reproducibility
+    # ---- Metadata ----
     metadata = {
         "version": DATASET_VERSION,
         "created_at": datetime.now(datetime.timezone.utc).isoformat(),
@@ -116,20 +128,12 @@ if __name__ == "__main__":
         "seed": 42  # Don't change
     }
 
+    # ---- Save ----
     if SAVE_MODE == "local":
-        version_path = os.path.join(BASE_DATA_DIR, DATASET_VERSION)
-        if os.path.exists(version_path):
-            raise ValueError(f"Dataset version {DATASET_VERSION} already exists.")
+        os.makedirs(version_path, exist_ok=True)
+        labels_df.to_csv(os.path.join(version_path, "labels.csv"), index=False)
 
-        os.makedirs(os.path.join(BASE_DATA_DIR, DATASET_VERSION),exist_ok=True)
-
-        labels_df.to_csv(
-            os.path.join(BASE_DATA_DIR, DATASET_VERSION, "labels.csv"),
-            index=False
-        )
-
-        # Save metadata json
-        with open(os.path.join(BASE_DATA_DIR, DATASET_VERSION, "metadata.json"),"w") as f:
+        with open(os.path.join(version_path, "metadata.json"), "w") as f:
             json.dump(metadata, f, indent=4)
 
         print(f"✅ Local dataset created at {BASE_DATA_DIR}.")
@@ -137,18 +141,12 @@ if __name__ == "__main__":
     elif SAVE_MODE == "gcs":
         csv_buffer = io.StringIO()
         labels_df.to_csv(csv_buffer, index=False)
-        csv_buffer.seek(0)
-
-        bucket = storage.Client().bucket(GCS_BUCKET_NAME)
-        if bucket.blob(f"{DATASET_VERSION}/labels.csv").exists():
-            raise ValueError(f"Dataset version {DATASET_VERSION} already exists in GCS.")
 
         bucket.blob(f"{DATASET_VERSION}/labels.csv").upload_from_string(
             csv_buffer.getvalue(),
             content_type="text/csv"
         )
 
-        # Save metadata json
         bucket.blob(f"{DATASET_VERSION}/metadata.json").upload_from_string(
             json.dumps(metadata, indent=4),
             content_type="application/json"
