@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import random
 import pandas as pd
 from pathlib import Path
+from params import DISHES
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,7 +82,7 @@ def predict(
     base_portion = 200.0
 
     # ---- MOCK LOGIC FOR MODEL PREDICTION ----
-    dish = random.choice(["ramen", "sushi", "curry", "pizza"])
+    dish = random.choice(DISHES)
     confidence = round(random.uniform(0.80, 0.98), 2)
 
 
