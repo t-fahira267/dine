@@ -117,6 +117,10 @@ if __name__ == "__main__":
     }
 
     if SAVE_MODE == "local":
+        version_path = os.path.join(BASE_DATA_DIR, DATASET_VERSION)
+        if os.path.exists(version_path):
+            raise ValueError(f"Dataset version {DATASET_VERSION} already exists.")
+
         os.makedirs(os.path.join(BASE_DATA_DIR, DATASET_VERSION),exist_ok=True)
 
         labels_df.to_csv(
@@ -136,6 +140,9 @@ if __name__ == "__main__":
         csv_buffer.seek(0)
 
         bucket = storage.Client().bucket(GCS_BUCKET_NAME)
+        if bucket.blob(f"{DATASET_VERSION}/labels.csv").exists():
+            raise ValueError(f"Dataset version {DATASET_VERSION} already exists in GCS.")
+
         bucket.blob(f"{DATASET_VERSION}/labels.csv").upload_from_string(
             csv_buffer.getvalue(),
             content_type="text/csv"
