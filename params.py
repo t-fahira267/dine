@@ -12,6 +12,7 @@ DATASET_OUTPUT_DIR = f"{BASE_DATA_DIR}/"
 # =============================
 
 SAVE_MODE = "local"  # or "gcs"
+DATASET_VERSION = "v1"
 DISHES = ["Apple", "Fried Chicken", "Pizza", "Sushi", "Sushi Platter"
           "Mapo Tofu", "Egg Tart", "Boiled Eggs", "Grilled Steak",
           "Hamburger", "Oranges"]

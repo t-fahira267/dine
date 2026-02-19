@@ -1,4 +1,5 @@
 """
+PLEASE READ BEFORE RUNNING
 Create dataset as a one-time artifact (or versioned occasionally)
 
 Choose a save method (SAVE_MODE variable in params):
@@ -20,15 +21,22 @@ from params import *
 
 
 def save_local(img, label, filename):
-    save_path = os.path.join(BASE_DATA_DIR, "images", label, filename)
+    save_path = os.path.join(
+        BASE_DATA_DIR,
+        DATASET_VERSION,
+        "images",
+        label,
+        filename
+    )
+
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     img.save(save_path, format="JPEG", quality=90)
 
-    return f"images/{label}/{filename}"
+    return f"{DATASET_VERSION}/images/{label}/{filename}"
 
 
 def save_gcs(img, label, filename, bucket):
-    blob_path = f"images/{label}/{filename}"
+    blob_path = f"{DATASET_VERSION}/images/{label}/{filename}"
 
     buffer = io.BytesIO()
     img.save(buffer, format="JPEG", quality=90)
@@ -95,10 +103,13 @@ if __name__ == "__main__":
     labels_df = pd.DataFrame(labels)
 
     if SAVE_MODE == "local":
+        os.makedirs(os.path.join(BASE_DATA_DIR, DATASET_VERSION),exist_ok=True)
+
         labels_df.to_csv(
-            os.path.join(BASE_DATA_DIR, "labels.csv"),
+            os.path.join(BASE_DATA_DIR, DATASET_VERSION, "labels.csv"),
             index=False
         )
+
         print(f"✅ Local dataset created at {BASE_DATA_DIR}.")
 
     elif SAVE_MODE == "gcs":
@@ -107,7 +118,7 @@ if __name__ == "__main__":
         csv_buffer.seek(0)
 
         bucket = storage.Client().bucket(GCS_BUCKET_NAME)
-        bucket.blob("labels.csv").upload_from_string(
+        bucket.blob(f"{DATASET_VERSION}/labels.csv").upload_from_string(
             csv_buffer.getvalue(),
             content_type="text/csv"
         )
