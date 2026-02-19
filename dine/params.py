@@ -11,8 +11,6 @@ DATASET_OUTPUT_DIR = f"{BASE_DATA_DIR}/"
 # Dataset Parameters
 # =============================
 
-SAVE_MODE = "local"  # "local" or "gcs"
-DATASET_VERSION = "test_create"
 DISHES = ["apple", "fried chicken", "pizza", "sushi", "ramen", "mapo tofu",
           "egg tart", "boiled eggs", "grilled steak", "hamburger"]
 PER_CLASS = 1
