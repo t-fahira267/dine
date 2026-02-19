@@ -14,6 +14,8 @@ Both will save the following artifacts:
 import os
 import io
 import pandas as pd
+import json
+from datetime import datetime
 from datasets import load_dataset
 from google.cloud import storage
 
@@ -102,6 +104,18 @@ if __name__ == "__main__":
     labels = create_dataset(save_mode=SAVE_MODE)
     labels_df = pd.DataFrame(labels)
 
+    # Create metadata for reproducibility
+    metadata = {
+        "version": DATASET_VERSION,
+        "created_at": datetime.now(datetime.timezone.utc).isoformat(),
+        "dishes": DISHES,
+        "per_class": PER_CLASS,
+        "total_samples": len(labels_df),
+        "class_distribution": labels_df["label"].value_counts().to_dict(),
+        "source_dataset": "Codatta/MM-Food-100K",
+        "seed": 42  # Don't change
+    }
+
     if SAVE_MODE == "local":
         os.makedirs(os.path.join(BASE_DATA_DIR, DATASET_VERSION),exist_ok=True)
 
@@ -109,6 +123,10 @@ if __name__ == "__main__":
             os.path.join(BASE_DATA_DIR, DATASET_VERSION, "labels.csv"),
             index=False
         )
+
+        # Save metadata json
+        with open(os.path.join(BASE_DATA_DIR, DATASET_VERSION, "metadata.json"),"w") as f:
+            json.dump(metadata, f, indent=4)
 
         print(f"✅ Local dataset created at {BASE_DATA_DIR}.")
 
@@ -121,6 +139,12 @@ if __name__ == "__main__":
         bucket.blob(f"{DATASET_VERSION}/labels.csv").upload_from_string(
             csv_buffer.getvalue(),
             content_type="text/csv"
+        )
+
+        # Save metadata json
+        bucket.blob(f"{DATASET_VERSION}/metadata.json").upload_from_string(
+            json.dumps(metadata, indent=4),
+            content_type="application/json"
         )
 
         print(f"✅ Dataset uploaded to GCS at {GCS_BUCKET_NAME}.")
