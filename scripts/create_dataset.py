@@ -2,13 +2,14 @@
 PLEASE READ BEFORE RUNNING
 Create dataset as a one-time artifact (or versioned occasionally)
 
-Choose a save method (SAVE_MODE variable in params):
+Choose a save method; "SAVE_MODE":
 1. Local
 2. Google Cloud Storage (GCS)
 
 Both will save the following artifacts:
-1. Images per class (PER_CLASS variable in params)
-2. Labels (DISHES variable in params), and image path in a tabular CSV file
+1. Images per class; "PER_CLASS"
+2. Labels; "DISHES", and image path in a tabular CSV file
+3. Metadata of the dataset, in a JSON file
 """
 
 import os
@@ -21,8 +22,14 @@ from datetime import datetime, timezone
 from datasets import load_dataset
 from google.cloud import storage
 
-from dine.params import *
+from dine.params import BASE_DATA_DIR, GCS_BUCKET_NAME
 
+# ---- Set dataset variables ----
+SAVE_MODE = "local"  # "local" or "gcs"
+DATASET_VERSION = "test_create"
+DISHES = ["apple", "fried chicken", "pizza", "sushi", "ramen", "mapo tofu",
+          "egg tart", "boiled eggs", "grilled steak", "hamburger"]  # or import from dine.params.py
+PER_CLASS = 1  # or import from dine.params.py
 
 def save_local(img, label, filename):
     save_path = os.path.join(
