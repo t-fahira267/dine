@@ -22,14 +22,7 @@ from datetime import datetime, timezone
 from datasets import load_dataset
 from google.cloud import storage
 
-from dine.params import BASE_DATA_DIR, GCS_BUCKET_NAME
-
-# ---- Set dataset variables ----
-SAVE_MODE = "local"  # "local" or "gcs"
-DATASET_VERSION = "test_create"
-DISHES = ["apple", "fried chicken", "pizza", "sushi", "ramen", "mapo tofu",
-          "egg tart", "boiled eggs", "grilled steak", "hamburger"]  # or import from dine.params.py
-PER_CLASS = 1  # or import from dine.params.py
+from dine.params import *
 
 def save_local(img, label, filename):
     save_path = os.path.join(
