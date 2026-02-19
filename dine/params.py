@@ -11,15 +11,14 @@ DATASET_OUTPUT_DIR = f"{BASE_DATA_DIR}/"
 # Dataset Parameters
 # =============================
 
-SAVE_MODE = "local"  # or "gcs"
-DATASET_VERSION = "v1"
-DISHES = ["Apple", "Fried Chicken", "Pizza", "Sushi", "Sushi Platter"
-          "Mapo Tofu", "Egg Tart", "Boiled Eggs", "Grilled Steak",
-          "Hamburger", "Oranges"]
+SAVE_MODE = "gcs"  # "local" or "gcs"
+DATASET_VERSION = "test_create"
+DISHES = ["apple", "fried chicken", "pizza", "sushi", "ramen", "mapo tofu",
+          "egg tart", "boiled eggs", "grilled steak", "hamburger"]
 PER_CLASS = 1
 
 # =============================
 # Google Cloud Storage Parameters
 # =============================
 
-GCS_BUCKET_NAME="dine-mmfood"
+GCS_BUCKET_NAME="mmfood"
