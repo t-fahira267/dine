@@ -68,3 +68,6 @@ upload_gcs:
 	@python scripts/upload_gcs.py
 
 dataset: prepare_candidates download_subset upload_gcs
+
+create-dataset:
+	@python -m scripts.create_dataset
