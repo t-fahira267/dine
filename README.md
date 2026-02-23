@@ -6,6 +6,21 @@ Computer vision for your nutrition
 - Data Source: https://huggingface.co/datasets/Codatta/MM-Food-100K
 - Type of analysis: Computer Vision
 
+## ToC
+- [DINE: Dish Image Nutrition Estimator](#dine-dish-image-nutrition-estimator)
+  - [ToC](#toc)
+- [Project Structure](#project-structure)
+- [Startup the project](#startup-the-project)
+- [Project Development](#project-development)
+- [Environmental variables](#environmental-variables)
+  - [Loading local variables](#loading-local-variables)
+- [GCP](#gcp)
+  - [Create a clean dataset](#create-a-clean-dataset)
+    - [1. `make clean_dataset`](#1-make-clean_dataset)
+    - [2. `make dataset`](#2-make-dataset)
+- [Inference Pipeline](#inference-pipeline)
+  - [MVP](#mvp)
+
 ---
 # Project Structure
 ```
@@ -45,7 +60,7 @@ Unittest test:
 make clean install test
 ```
 
-# Install Project for Development
+# Project Development
 
 Go to `https://github.com/t-fahira267/dine/tree/master` to see the project, manage issues,
 setup you ssh public key, ...
@@ -177,9 +192,9 @@ There are two ways to create it:
       ```
 
 
-## Inference Pipeline
+# Inference Pipeline
 
-### MVP
+## MVP
 ```mermaid
 flowchart LR
   U([User]) -->|Input image and portion size| UI[UI]
