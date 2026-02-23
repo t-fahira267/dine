@@ -19,7 +19,8 @@ Computer vision for your nutrition
     - [1. `make clean_dataset`](#1-make-clean_dataset)
     - [2. `make dataset`](#2-make-dataset)
 - [Inference Pipeline](#inference-pipeline)
-  - [MVP](#mvp)
+  - [MVP1](#mvp1)
+- [Documentations](#documentations)
 
 ---
 # Project Structure
@@ -28,7 +29,7 @@ Computer vision for your nutrition
 ├── api/            # FastAPI endpoints
 ├── dine/           # Core Python package: ML models, preprocessing, training, inference logic
     └── params.py   # Global environmental variables. NO SECRETS ALLOWED
-├── docs/           # Documentation (nutrition calculation, references, etc.)
+├── docs/           # Documentations
 ├── frontend/       # Frontend app
 ├── notebooks/      # Jupyter notebooks for exploration, and experiments
 ├── scripts/        # Utility / CLI scripts (create dataset, etc.)
@@ -86,9 +87,7 @@ Defined in two files:
 2. local `.env` : Local parameters and secrets stored here. DO NOT PUSH TO REPO
 
 ## Loading local variables
-Make sure that direnv has been installed
-
-Make sure that `.envrc` file is available in project root directory
+Make sure that direnv has been installed and `.envrc` file is available in project root directory
 
 Create `.env` file, and add some default parameters
 ```bash
@@ -194,7 +193,7 @@ There are two ways to create it:
 
 # Inference Pipeline
 
-## MVP
+## MVP1
 ```mermaid
 flowchart LR
   U([User]) -->|Input image and portion size| UI[UI]
@@ -217,3 +216,10 @@ flowchart LR
   CALC -->|Final response| UI
 
   UI -->|Show output| U
+```
+
+# Documentations
+Check `docs/`
+- About Output and Business metric
+- Nutrition lookup table calculation
+- Other references
