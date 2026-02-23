@@ -136,7 +136,7 @@ There are two ways to create it:
    - **metadata.json** : Contains meta information such as versioning, total samples, and class distribution
 
    How to run:
-   1. (Optional) Modify the relevant env. variables in params.py
+   1. (Optional) Modify the relevant env. variables in `params.py`
       ```
       SAVE_MODE = "local"  # or "gcs"
       ```
@@ -171,9 +171,10 @@ There are two ways to create it:
    - **candidates.csv** : Cleaned up .csv data that will serve as the unique source of truth
 
    How to run:
-   1. (Optional) Modify the relevant env. variables in params.py
+   1. (Optional) Modify the relevant env. variables in `params.py`
       ```
-      SAVE_MODE = "local"  # or "gcs"
+      OUTPUT_FILENAME = "candidates.csv"
+      LABELS_FILENAME = "labels.csv"
       ```
    2. Run the following commands:
       ```bash
