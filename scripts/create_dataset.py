@@ -100,9 +100,12 @@ def create_dataset(save_mode="local"):
                 elif save_mode == "gcs":
                     image_path = save_gcs(img, label, filename, bucket)
 
+                portion_size = row.get("portion_size", None)
+
                 labels_rows.append({
                     "image_path": image_path,
-                    "label": label
+                    "label": label,
+                    "portion_size": portion_size
                 })
 
             except Exception as e:
