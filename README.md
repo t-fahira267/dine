@@ -12,11 +12,16 @@ Computer vision for your nutrition
 
 The initial setup.
 
-Create virtualenv and install the project:
+Create virtualenv:
 ```bash
-sudo apt-get install virtualenv python-pip python-dev
-deactivate; virtualenv ~/venv ; source ~/venv/bin/activate ;\
-    pip install pip -U; pip install -r requirements.txt
+# Create new venv
+pyenv virtualenv 3.10.6 dine_venv
+
+# Set as local venv
+pyenv local dine_venv
+
+# Activate (if not auto)
+source dine_venv/bin/activate
 ```
 
 Unittest test:
@@ -24,123 +29,136 @@ Unittest test:
 make clean install test
 ```
 
-Check for dine in github.com/{group}. If your project is not set please add it:
+# Install Project for Development
 
-Create a new project on github.com/{group}/dine
-Then populate it:
-
-```bash
-##   e.g. if group is "{group}" and project_name is "dine"
-git remote add origin git@github.com:{group}/dine.git
-git push -u origin master
-git push -u origin --tags
-```
-
-Functionnal test with a script:
-
-```bash
-cd
-mkdir tmp
-cd tmp
-dine-run
-```
-
-# Install
-
-Go to `https://github.com/{group}/dine` to see the project, manage issues,
+Go to `https://github.com/t-fahira267/dine/tree/master` to see the project, manage issues,
 setup you ssh public key, ...
-
-Create a python3 virtualenv and activate it:
-
-```bash
-sudo apt-get install virtualenv python-pip python-dev
-deactivate; virtualenv -ppython3 ~/venv ; source ~/venv/bin/activate
-```
 
 Clone the project and install it:
 
 ```bash
-git clone git@github.com:{group}/dine.git
-cd dine
-pip install -r requirements.txt
-make clean install test                # install and test
-```
-Functionnal test with a script:
+# Clone repo
+git clone git@github.com:t-fahira267/dine.git
 
+# Install dependencies
+cd dine
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Install project module with editable flag
+pip install -e .
+```
+
+# Environmental variables
+Defined in two files:
+1. `dine/params.py` : Global parameters used in the project. NO SECRETS ALLOWED
+2. local `.env` : Local parameters and secrets stored here. DO NOT PUSH TO REPO
+
+## Loading local variables
+Make sure that direnv has been installed
+
+Make sure that `.envrc` file is available in project root directory
+
+Create `.env` file, and add some default parameters
 ```bash
-cd
-mkdir tmp
-cd tmp
-dine-run
+echo "BASE_DATA_DIR=data/mmfood100k" >> .env
+```
+
+Load variables
+```bash
+# In project root directory, run
+direnv allow .
+```
+
+If you made some changes, reload variables
+```bash
+direnv reload .
 ```
 
 # GCP
 
-## Bucket Location
+**GCS Bucket Location**
 
 ```
-gs://dine-mmfood/mmfood100k/v1/
+gs://mmfood/
 ```
 
 Region: asia-northeast1 (Tokyo)
 
-## Dataset Structure
+## Create a clean dataset
+Clean dataset is created as a one-time artifact or versioned occasionally.
+<br>Currently, we are using [Codatta/MM-Food-100K](https://huggingface.co/datasets/Codatta/MM-Food-100K) as main dataset.
 
-```
-mmfood100k/v1/
+There are two ways to create it:
+### 1. `make clean_dataset`
+  <br> Dataset can be created **directly in local directory** or **directly in GCS**
+  <br> creates image dataset with the following structure:
+  ```
+  mmfood/v1/
   images/
     sushi/
-    ramen/
+    ...
+  labels.csv
+  metadata.json
+  ```
+   - **images/** : Contains downloaded images grouped by canonical dish label.
+   - **labels.csv** : Columns incl. `image_path | label | portion_size`
+   - **metadata.json** : Contains meta information such as versioning, total samples, and class distribution
+
+   How to run:
+   1. (Optional) Modify the relevant env. variables in params.py
+      ```
+      SAVE_MODE = "local"  # or "gcs"
+      ```
+   2. Run the following commands:
+      ```bash
+        # (Le Wagon students only) Unset default creds
+        unset GOOGLE_APPLICATION_CREDENTIALS
+
+        # Login to Google Cloud Console with the Google account that has permission to dine project
+        gcloud auth application-default login
+
+        # Check you can reach the bucket
+        gsutil ls gs://mmfood
+
+        # Create dataset
+        make clean_dataset
+      ```
+
+### 2. `make dataset`
+  <br> Dataset is created by **downloading the images to local directory then uploading to GCS**
+  <br> creates image dataset with the following structure:
+  ```
+  mmfood/mmfood100k/v1/
+  images/
+    sushi/
+    ...
   labels.csv
   candidates.csv
-```
+  ```
+   - **images/** : Contains downloaded images grouped by canonical dish label.
+   - **labels.csv** : Columns incl. `image_path | label`
+   - **candidates.csv** : Cleaned up .csv data that will serve as the unique source of truth
 
-**`images/`**
+   How to run:
+   1. (Optional) Modify the relevant env. variables in params.py
+      ```
+      SAVE_MODE = "local"  # or "gcs"
+      ```
+   2. Run the following commands:
+      ```bash
+        # (Le Wagon students only) Unset default creds
+        unset GOOGLE_APPLICATION_CREDENTIALS
 
-Contains downloaded images grouped by canonical dish label.
+        # Login to Google Cloud Console with the Google account that has permission to dine project
+        gcloud auth application-default login
 
-```
-images/sushi/000001.jpg
-images/ramen/000001.jpg
-```
+        # Check you can reach the bucket
+        gsutil ls gs://mmfood
 
-**`labels.csv`**
-
-Format:
-```
-image_path	label
-images/sushi/000001.jpg	sushi
-images/ramen/000001.jpg	ramen
-```
-
-Notes:
-
-- image_path is relative to the root of v1/
-
-- Labels are lowercase and standardized
-
-**`candidates.csv`**
-
-Cleaned up .csv data that will serve as the unique source of truth
-
-## How to upload to GCP
-
-1. Login and configure the project
-
-```
-gcloud auth login
-```
-
-2. Check you can reach the bucket
-
-```
-gsutil ls gs://mmfood
-```
-
-3. Run makefile command (this will cleanup the HuggingFace dataset, download it locally and upload it to GCS)
-```
-make dataset
-```
+        # Create dataset
+        make dataset
+      ```
 
 
 ## Inference Pipeline
