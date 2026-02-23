@@ -8,7 +8,7 @@ Choose a save method; "SAVE_MODE":
 
 Both will save the following artifacts:
 1. Images per class; "PER_CLASS"
-2. Labels; "DISHES", and image path in a tabular CSV file
+2. Labels; "DISHES", image path, and actual portion size in a tabular CSV file
 3. Metadata of the dataset, in a JSON file
 """
 
@@ -21,6 +21,7 @@ from PIL import Image
 from datetime import datetime, timezone
 from datasets import load_dataset
 from google.cloud import storage
+from tqdm import tqdm
 
 from dine.params import *
 
@@ -67,49 +68,66 @@ def create_dataset(save_mode="local"):
         storage_client = storage.Client()
         bucket = storage_client.bucket(GCS_BUCKET_NAME)
 
-    session = requests.Session()  # Session reuse
-    for dish in DISHES:
-        print(f"\nProcessing {dish}...")
+    session = requests.Session() # Session reuse
 
+    total_images = 0
+    dish_subsets = {}
+
+    for dish in DISHES:
         dish_data = dataset.filter(
-            lambda x: isinstance(x["dish_name"], str) and x["dish_name"].lower() == dish.lower()
+            lambda x: isinstance(x["dish_name"], str)
+            and x["dish_name"].lower() == dish.lower()
         )
 
         dish_data = dish_data.shuffle(seed=42).select(
             range(min(PER_CLASS, len(dish_data)))
         )
 
-        label = dish.lower().replace(" ", "_")
+        dish_subsets[dish] = dish_data
+        total_images += len(dish_data)
 
-        for i, row in enumerate(dish_data):
-            filename = f"{i:06d}.jpg"
+    print(f"\nTotal images to process: {total_images}\n")
 
-            try:
-                url = row.get("image_url")
-                if not isinstance(url, str):
-                    continue
+    with tqdm(total=total_images, desc="Creating dataset") as pbar:
 
-                response = session.get(url, timeout=15)
-                response.raise_for_status()
+        for dish, dish_data in dish_subsets.items():
 
-                img = Image.open(io.BytesIO(response.content)).convert("RGB")
+            label = dish.lower().replace(" ", "_")
 
-                if save_mode == "local":
-                    image_path = save_local(img, label, filename)
+            for i, row in enumerate(dish_data):
+                filename = f"{i:06d}.jpg"
 
-                elif save_mode == "gcs":
-                    image_path = save_gcs(img, label, filename, bucket)
+                try:
+                    url = row.get("image_url")
+                    if not isinstance(url, str):
+                        pbar.update(1)
+                        continue
 
-                portion_size = row.get("portion_size", None)
+                    response = session.get(url, timeout=15)
+                    response.raise_for_status()
 
-                labels_rows.append({
-                    "image_path": image_path,
-                    "label": label,
-                    "portion_size": portion_size
-                })
+                    img = Image.open(io.BytesIO(response.content)).convert("RGB")
 
-            except Exception as e:
-                print("Failed:", e)
+                    if save_mode == "local":
+                        image_path = save_local(img, label, filename)
+                    elif save_mode == "gcs":
+                        image_path = save_gcs(img, label, filename, bucket)
+
+                    portion_size = row.get("portion_size", None)
+
+                    labels_rows.append({
+                        "image_path": image_path,
+                        "label": label,
+                        "portion_size": portion_size
+                    })
+
+                except Exception as e:
+                    print("Failed:", e)
+
+                finally:
+                    pbar.update(1)
+
+    session.close()
 
     return labels_rows
 
