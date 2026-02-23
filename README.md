@@ -7,6 +7,22 @@ Computer vision for your nutrition
 - Type of analysis: Computer Vision
 
 ---
+# Project Structure
+```
+.
+├── api/            # FastAPI endpoints
+├── dine/           # Core Python package: ML models, preprocessing, training, inference logic
+    └── params.py   # Global environmental variables. NO SECRETS ALLOWED
+├── docs/           # Documentation (nutrition calculation, references, etc.)
+├── frontend/       # Frontend app
+├── notebooks/      # Jupyter notebooks for exploration, and experiments
+├── scripts/        # Utility / CLI scripts (create dataset, etc.)
+├── tests/          # Unit and integration tests
+├── Makefile        # Project command shortcuts
+├── MANIFEST.in     # Packaging instructions (include extra files in distributions)
+└── setup.py        # Package configuration for installation (defines dine as installable package)
+```
+---
 
 # Startup the project
 
@@ -45,7 +61,7 @@ cd dine
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Install project module with editable flag
+# Install project package with editable flag
 pip install -e .
 ```
 
