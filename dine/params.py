@@ -17,7 +17,7 @@ PER_CLASS = 200
 DATASET_VERSION = "v1"
 
 # --- Only when running `make clean_dataset`
-SAVE_MODE = "gcs"  # or "gcs"
+SAVE_MODE = "local"  # or "gcs"
 
 # --- Only when running `make dataset` ---
 OUTPUT_FILENAME = "candidates.csv"
