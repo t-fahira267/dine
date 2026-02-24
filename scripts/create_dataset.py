@@ -114,11 +114,13 @@ def create_dataset(save_mode="local"):
                         image_path = save_gcs(img, label, filename, bucket)
 
                     portion_size = row.get("portion_size", None)
+                    nutritional_profile = row.get("nutritional_profile", None)
 
                     labels_rows.append({
                         "image_path": image_path,
                         "label": label,
-                        "portion_size": portion_size
+                        "portion_size": portion_size,
+                        "nutritional_profile": nutritional_profile
                     })
 
                 except Exception as e:
