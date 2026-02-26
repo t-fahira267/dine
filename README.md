@@ -15,6 +15,7 @@ Computer vision for your nutrition
 - [Environmental variables](#environmental-variables)
   - [Loading local variables](#loading-local-variables)
 - [GCP](#gcp)
+  - [Load a clean dataset](#load-a-clean-dataset)
   - [Create a clean dataset](#create-a-clean-dataset)
     - [1. `make clean_dataset`](#1-make-clean_dataset)
     - [2. `make dataset`](#2-make-dataset)
@@ -115,6 +116,17 @@ gs://mmfood/
 
 Region: asia-northeast1 (Tokyo)
 
+## Load a clean dataset
+In a Jupyter notebook:
+```python
+from dine.data import load_dataset
+
+labels_csv = load_dataset.load_labels_csv_from_gcs(bucket_name=GCS_BUCKET_NAME, dataset_version=DATASET_VERSION)
+img = load_dataset.load_image_from_gcs(labels_csv.loc[0, "image_path"])
+plt.imshow(img)
+plt.show()
+```
+
 ## Create a clean dataset
 Clean dataset is created as a one-time artifact or versioned occasionally.
 <br>Currently, we are using [Codatta/MM-Food-100K](https://huggingface.co/datasets/Codatta/MM-Food-100K) as main dataset.
@@ -137,7 +149,7 @@ There are two ways to create it:
    - **metadata.json** : Contains meta information such as versioning, total samples, and class distribution
 
    How to run:
-   1. (Optional) Modify the relevant env. variables in params.py
+   1. (Optional) Modify the relevant env. variables in `params.py`
       ```
       SAVE_MODE = "local"  # or "gcs"
       ```
@@ -173,9 +185,10 @@ There are two ways to create it:
    - **candidates.csv** : Cleaned up .csv data that will serve as the unique source of truth
 
    How to run:
-   1. (Optional) Modify the relevant env. variables in params.py
+   1. (Optional) Modify the relevant env. variables in `params.py`
       ```
-      SAVE_MODE = "local"  # or "gcs"
+      OUTPUT_FILENAME = "candidates.csv"
+      LABELS_FILENAME = "labels.csv"
       ```
    2. Run the following commands:
       ```bash
