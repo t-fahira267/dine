@@ -7,5 +7,11 @@ raw_data/
 **/__pycache__/
 .env
 .python-version
+
+# Ignore datasets
 data/
+# But DO NOT ignore the data functions inside dine/
+!dine/data/
+
+# Ignore GCP service account keys
 gcp/dine-lewagon-17c342455fa0.json
