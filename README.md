@@ -27,7 +27,7 @@ Computer vision for your nutrition
 ```
 .
 ├── api/            # FastAPI endpoints
-├── dine/           # Core Python package: ML models, preprocessing, training, inference logic
+└── dine/           # Core Python package: ML models, preprocessing, training, inference logic
     └── params.py   # Global environmental variables. NO SECRETS ALLOWED
 ├── docs/           # Documentations
 ├── frontend/       # Frontend app
@@ -124,12 +124,13 @@ There are two ways to create it:
   <br> Dataset can be created **directly in local directory** or **directly in GCS**
   <br> creates image dataset with the following structure:
   ```
-  mmfood/v1/
-  images/
-    sushi/
-    ...
-  labels.csv
-  metadata.json
+  .
+  └── mmfood/v1/
+      └── images/
+          ├── sushi/
+          └── ...
+      ├── labels.csv
+      └── metadata.json
   ```
    - **images/** : Contains downloaded images grouped by canonical dish label.
    - **labels.csv** : Columns incl. `image_path | label | portion_size`
@@ -159,12 +160,13 @@ There are two ways to create it:
   <br> Dataset is created by **downloading the images to local directory then uploading to GCS**
   <br> creates image dataset with the following structure:
   ```
-  mmfood/mmfood100k/v1/
-  images/
-    sushi/
-    ...
-  labels.csv
-  candidates.csv
+  .
+  └── mmfood/mmfood100k/v1/
+      └── images/
+          ├── sushi/
+          └── ...
+      ├── labels.csv
+      └── candidates.csv
   ```
    - **images/** : Contains downloaded images grouped by canonical dish label.
    - **labels.csv** : Columns incl. `image_path | label`

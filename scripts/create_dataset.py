@@ -10,6 +10,8 @@ Both will save the following artifacts:
 1. Images per class; "PER_CLASS"
 2. Labels; "DISHES", image path, and actual portion size in a tabular CSV file
 3. Metadata of the dataset, in a JSON file
+
+Caching is also available
 """
 
 import os
@@ -24,6 +26,23 @@ from google.cloud import storage
 from tqdm import tqdm
 
 from dine.params import *
+
+# --- Helper ---
+def count_existing_images(label):
+    dish_dir = os.path.join(
+        BASE_DATA_DIR,
+        DATASET_VERSION,
+        "images",
+        label
+    )
+
+    if not os.path.exists(dish_dir):
+        return 0
+
+    return len([
+        f for f in os.listdir(dish_dir)
+        if f.endswith(".jpg")
+    ])
 
 def save_local(img, label, filename):
     save_path = os.path.join(
@@ -61,6 +80,26 @@ def create_dataset(save_mode="local"):
         split="train"
     )
 
+    labels_csv_path = os.path.join(
+        BASE_DATA_DIR,
+        DATASET_VERSION,
+        "labels.csv"
+    )
+
+    metadata_path = os.path.join(
+        BASE_DATA_DIR,
+        DATASET_VERSION,
+        "metadata.json"
+    )
+
+    # -----------------------------
+    # GLOBAL SKIP (fully complete)
+    # -----------------------------
+    if save_mode == "local":
+        if os.path.exists(labels_csv_path) and os.path.exists(metadata_path):
+            print("Dataset already complete. Skipping creation.")
+            return pd.read_csv(labels_csv_path).to_dict("records")
+
     labels_rows = []
 
     bucket = None
@@ -68,9 +107,16 @@ def create_dataset(save_mode="local"):
         storage_client = storage.Client()
         bucket = storage_client.bucket(GCS_BUCKET_NAME)
 
-    session = requests.Session() # Session reuse
+    session = requests.Session()
 
     total_images = 0
+    dish_subsets = {}
+
+    # -----------------------------------
+    # Build subsets + compute total work
+    # -----------------------------------
+    total_target = 0
+    total_cached = 0
     dish_subsets = {}
 
     for dish in DISHES:
@@ -84,20 +130,73 @@ def create_dataset(save_mode="local"):
         )
 
         dish_subsets[dish] = dish_data
-        total_images += len(dish_data)
+        total_target += len(dish_data)
 
-    print(f"\nTotal images to process: {total_images}\n")
+        label = dish.lower().replace(" ", "_")
 
-    with tqdm(total=total_images, desc="Creating dataset") as pbar:
+        if save_mode == "local":
+            existing = count_existing_images(label)
+            total_cached += min(existing, len(dish_data))
+
+        elif save_mode == "gcs":
+            for i in range(len(dish_data)):
+                filename = f"{i:06d}.jpg"
+                blob_path = f"{DATASET_VERSION}/images/{label}/{filename}"
+                blob = bucket.blob(blob_path)
+                if blob.exists():
+                    total_cached += 1
+
+    total_to_download = total_target - total_cached
+
+    print("\nDataset summary:")
+    print(f"Total target images:      {total_target}")
+    print(f"Already cached images:    {total_cached}")
+    print(f"Images left to download:  {total_to_download}\n")
+
+    with tqdm(total=total_to_download, desc="Downloading images") as pbar:
 
         for dish, dish_data in dish_subsets.items():
 
             label = dish.lower().replace(" ", "_")
 
+            # -----------------------------------
+            # PER-DISH RESUME CHECK
+            # -----------------------------------
+            if save_mode == "local":
+                existing_count = count_existing_images(label)
+                if existing_count >= PER_CLASS:
+                    print(f"Skipping {dish} (already complete)")
+                    pbar.update(len(dish_data))
+                    continue
+
             for i, row in enumerate(dish_data):
                 filename = f"{i:06d}.jpg"
 
                 try:
+                    # -----------------------------------
+                    # PER-IMAGE CACHE CHECK
+                    # -----------------------------------
+                    if save_mode == "local":
+                        image_local_path = os.path.join(
+                            BASE_DATA_DIR,
+                            DATASET_VERSION,
+                            "images",
+                            label,
+                            filename
+                        )
+
+                        if os.path.exists(image_local_path):
+                            continue
+
+                    elif save_mode == "gcs":
+                        blob_path = f"{DATASET_VERSION}/images/{label}/{filename}"
+                        blob = bucket.blob(blob_path)
+                        if blob.exists():
+                            continue
+
+                    # -----------------------------------
+                    # Download image
+                    # -----------------------------------
                     url = row.get("image_url")
                     if not isinstance(url, str):
                         pbar.update(1)
@@ -110,15 +209,17 @@ def create_dataset(save_mode="local"):
 
                     if save_mode == "local":
                         image_path = save_local(img, label, filename)
-                    elif save_mode == "gcs":
+                    else:
                         image_path = save_gcs(img, label, filename, bucket)
 
                     portion_size = row.get("portion_size", None)
+                    nutritional_profile = row.get("nutritional_profile", None)
 
                     labels_rows.append({
                         "image_path": image_path,
                         "label": label,
-                        "portion_size": portion_size
+                        "portion_size": portion_size,
+                        "nutritional_profile": nutritional_profile
                     })
 
                 except Exception as e:
