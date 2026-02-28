@@ -16,6 +16,7 @@ Caching is also available
 
 import os
 import io
+import re
 import pandas as pd
 import json
 import requests
@@ -219,6 +220,67 @@ def create_dataset(save_mode="local"):
 
     return labels_rows
 
+def clean_labels_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Clean labels dataframe:
+    - Expand nutritional_profile JSON into flat columns
+    - Parse portion_size and compute portion_grams
+    - Drop raw JSON columns
+    """
+
+    df = df.copy()
+
+    # -----------------------------------
+    # 1. Expand "nutritional_profile" JSON
+    # -----------------------------------
+    def safe_json_load(x):
+        if isinstance(x, str):
+            try:
+                return json.loads(x)
+            except Exception:
+                return {}
+        elif isinstance(x, dict):
+            return x
+        return {}
+
+    df["nutritional_profile"] = df["nutritional_profile"].apply(safe_json_load)
+
+    nutri_df = pd.json_normalize(df["nutritional_profile"])
+
+    df = pd.concat(
+        [df.drop(columns=["nutritional_profile"]), nutri_df],
+        axis=1
+    )
+
+    # -----------------------------------
+    # 2. Clean "portion_size"
+    # -----------------------------------
+    def safe_list_load(x):
+        if isinstance(x, str):
+            try:
+                return json.loads(x)
+            except Exception:
+                return []
+        elif isinstance(x, list):
+            return x
+        return []
+
+    df["portion_size"] = df["portion_size"].apply(safe_list_load)
+
+    def sum_grams(ingredients):
+        total = 0.0
+        for item in ingredients:
+            match = re.search(r"(\d+(?:\.\d+)?)g", str(item))
+            if match:
+                total += float(match.group(1))
+        return total
+
+    df["portion_grams"] = df["portion_size"].apply(sum_grams)
+
+    df = df.drop(columns=["portion_size"])
+
+    return df
+
 
 if __name__ == "__main__":
 
@@ -232,6 +294,11 @@ if __name__ == "__main__":
     # ---- Create dataset ----
     labels = create_dataset(save_mode=SAVE_MODE)
     labels_df = pd.DataFrame(labels)
+
+    if labels_df.empty:
+        raise ValueError("No samples were created. Check filtering or image downloads.")
+
+    labels_df = clean_labels_dataframe(labels_df)
 
     if labels_df.empty:
         raise ValueError("No samples were created. Check filtering or image downloads.")
