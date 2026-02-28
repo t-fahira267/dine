@@ -150,7 +150,7 @@ There are two ways to create it:
 
    How to run:
    1. (Optional) Modify the relevant env. variables in `params.py`
-      ```
+      ```bash
       SAVE_MODE = "local"  # or "gcs"
       ```
    2. Run the following commands:
@@ -167,6 +167,13 @@ There are two ways to create it:
         # Create dataset
         make clean_dataset
       ```
+
+  **Caching feature** has been added with the following behavior:
+  ```
+  Images = cached + incremental download
+  Labels = regenerated from scratch
+  Metadata = regenerated from scratch
+  ```
 
 ### 2. `make dataset`
   <br> Dataset is created by **downloading the images to local directory then uploading to GCS**
