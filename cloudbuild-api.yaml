@@ -29,5 +29,7 @@ steps:
         "--region","${_REGION}",
         "--platform","managed",
         "--allow-unauthenticated",
+        "--memory","2Gi",
+        "--cpu","1",
         "--set-env-vars","GCS_BUCKET=${_GCS_BUCKET},GCS_MODEL_PREFIX=${_GCS_MODEL_PREFIX}"
       ]
