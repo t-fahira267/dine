@@ -1,0 +1,11 @@
+# Place these three files here before building the Docker image:
+#   multitask_v4.keras   — trained Keras model (from Colab)
+#   macro_scaler.pkl     — sklearn StandardScaler (from Colab)
+#   label_encoder.pkl    — sklearn LabelEncoder  (from Colab)
+#
+# Export command to run at the end of your Colab notebook:
+#   import joblib
+#   e2e_model.save("multitask_v4.keras")
+#   joblib.dump(macro_scaler, "macro_scaler.pkl")
+#   joblib.dump(le,           "label_encoder.pkl")
+# Then download and drop those files into this folder.

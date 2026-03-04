@@ -6,7 +6,7 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
 
 st.title("Dine")
 
-st.write("Upload a food photo and enter portion size.")
+st.write("Upload a food photo to get dish recognition and nutrition estimates.")
 
 # 1️⃣ Taking photos
 uploaded_file = st.file_uploader(
@@ -14,15 +14,7 @@ uploaded_file = st.file_uploader(
     type=["jpg", "jpeg", "png"]
 )
 
-# 2️⃣ Input components
-portion = st.number_input(
-    "Enter portion (g)",
-    min_value=1,
-    value=100,
-    step=10
-)
-
-# 3️⃣ Analysis button
+# 2️⃣ Analysis button
 if st.button("Analyze"):
 
     if uploaded_file is None:
@@ -30,7 +22,6 @@ if st.button("Analyze"):
     else:
         with st.spinner("Analyzing..."):
 
-            # Construct form-data
             files = {
                 "image": (
                     uploaded_file.name,
@@ -39,25 +30,19 @@ if st.button("Analyze"):
                 )
             }
 
-            data = {
-                "portion": portion
-            }
-
             try:
                 response = requests.post(
                     f"{API_BASE_URL}/predict",
                     files=files,
-                    data=data
                 )
 
                 if response.status_code != 200:
-                    st.error("Backend error.")
+                    st.error(f"Backend error: {response.text}")
                 else:
                     result = response.json()
 
-                    # 4️⃣ Display results
-                    st.success(f"Detected food: {result['dish']}")
-                    st.write(f"Nutrition for {result['portion']} g")
+                    # 3️⃣ Display results
+                    st.success(f"Detected: **{result['dish']}**  (confidence: {result['confidence']:.0%})")
 
                     nutrition = result["nutrition"]
 
