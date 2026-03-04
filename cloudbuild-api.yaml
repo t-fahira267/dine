@@ -9,6 +9,11 @@ substitutions:
   _GCS_MODEL_PREFIX: models/v1
 
 steps:
+  # Download model artifacts into api/model/ so they are baked into the image.
+  # This avoids any GCS download at container startup, which would exceed Cloud Run's health-check timeout.
+  - name: gcr.io/cloud-builders/gsutil
+    args: ["-m", "cp", "-r", "gs://${_GCS_BUCKET}/${_GCS_MODEL_PREFIX}/*", "api/model/"]
+
   - name: gcr.io/cloud-builders/docker
     args: ["build", "-t", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/dine-api:$SHORT_SHA", "-f", "api/Dockerfile", "."]
 
