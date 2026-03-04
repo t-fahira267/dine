@@ -191,6 +191,53 @@ div.stButton > button:active {
 [data-testid="stStatusWidget"] {
     border-radius: 16px;
 }
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 640px) {
+    .hero-wrap { padding: 1.5rem 0 0.3rem; }
+    .hero-logo { max-width: 200px; }
+    .hero-sub { font-size: 0.95rem; margin-bottom: 1.2rem; }
+
+    [data-testid="stFileUploader"] {
+        padding: 0.8rem;
+        border-radius: 14px;
+    }
+
+    div.stButton > button {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+    }
+
+    .result-card {
+        padding: 1.4rem 1.2rem;
+        border-radius: 16px;
+        margin-top: 1rem;
+    }
+    .dish-name { font-size: 1.6rem; }
+    .confidence-badge { font-size: 0.8rem; padding: 0.2rem 0.6rem; }
+
+    .macros-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+    }
+    .macro-pill {
+        border-radius: 12px;
+        padding: 0.8rem 0.4rem;
+    }
+    .macro-icon { font-size: 1.2rem; }
+    .macro-value { font-size: 1.4rem; }
+    .macro-label { font-size: 0.7rem; }
+}
+
+@media (max-width: 380px) {
+    .hero-logo { max-width: 160px; }
+    .dish-name { font-size: 1.3rem; }
+    .macro-value { font-size: 1.2rem; }
+    .macros-row { gap: 0.4rem; }
+    .macro-pill { padding: 0.6rem 0.3rem; }
+}
 </style>
 """, unsafe_allow_html=True)
 
