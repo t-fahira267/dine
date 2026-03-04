@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+numpy
+pandas
+scikit-learn
+joblib
+tensorflow
+Pillow
+google-cloud-storage

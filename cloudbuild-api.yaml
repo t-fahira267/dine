@@ -5,6 +5,8 @@ substitutions:
   _REGION: asia-northeast1
   _REPO: cloud-run-source-deploy
   _SERVICE: dine-api
+  _GCS_BUCKET: mmfood
+  _GCS_MODEL_PREFIX: models/v1
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -21,5 +23,6 @@ steps:
         "--image","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/dine-api:$SHORT_SHA",
         "--region","${_REGION}",
         "--platform","managed",
-        "--allow-unauthenticated"
+        "--allow-unauthenticated",
+        "--set-env-vars","GCS_BUCKET=${_GCS_BUCKET},GCS_MODEL_PREFIX=${_GCS_MODEL_PREFIX}"
       ]

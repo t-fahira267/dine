@@ -35,6 +35,7 @@ fsspec
 python-multipart
 fastapi
 uvicorn
-python-multipart
-pandas
 openpyxl
+
+mlflow==2.1.1
+colorama

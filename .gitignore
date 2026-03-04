@@ -15,3 +15,7 @@ data/
 
 # Ignore GCP service account keys
 gcp/dine-lewagon-17c342455fa0.json
+
+# Ignore trained model artifacts (large binaries — download from Colab)
+*.keras
+*.pkl
