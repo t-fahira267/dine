@@ -5,6 +5,7 @@ substitutions:
   _REGION: asia-northeast1
   _REPO: cloud-run-source-deploy
   _SERVICE: dine-frontend
+  _APP_ENV: DEV
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -22,5 +23,5 @@ steps:
         "--region","${_REGION}",
         "--platform","managed",
         "--allow-unauthenticated",
-        "--set-env-vars","API_BASE_URL=${_API_BASE_URL}"
+        "--set-env-vars","API_BASE_URL=${_API_BASE_URL},APP_ENV=${_APP_ENV}"
       ]
