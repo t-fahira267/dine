@@ -9,7 +9,10 @@ substitutions:
   _MODEL_VERSION: demo_v11.0
 
 steps:
-  # Download model artifacts into api/model/<version>/ so they are baked into the image.
+  # Create destination dir and download model artifacts so they are baked into the image.
+  - name: bash
+    args: ["mkdir", "-p", "api/model/${_MODEL_VERSION}"]
+
   - name: gcr.io/cloud-builders/gsutil
     args: ["-m", "cp", "-r", "gs://${_GCS_BUCKET}/models/${_MODEL_VERSION}/*", "api/model/${_MODEL_VERSION}/"]
 
