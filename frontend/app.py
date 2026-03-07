@@ -21,12 +21,13 @@ st.set_page_config(
 # ── Custom CSS ───────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Lato:wght@300;400;700;900&display=swap');
 
 /* ---- global ---- */
 body, .stApp {
-    background: radial-gradient(ellipse at 50% 0%, #1a1040 0%, #0e1117 55%);
-    font-family: 'Inter', sans-serif;
+    background-color: #F9F7F2;
+    font-family: 'Lato', sans-serif;
+    color: #2C3E50;
 }
 
 /* hide streamlit chrome */
@@ -48,35 +49,36 @@ body, .stApp {
     50% { transform: translateY(-10px); }
 }
 .hero-sub {
-    color: #94a3b8;
+    color: #5D6D7E;
+    font-family: 'Lato', sans-serif;
     font-size: 1.1rem;
     font-weight: 400;
     margin-top: 0.5rem;
     margin-bottom: 2rem;
 }
 .hero-sub strong {
-    color: #e2e8f0;
+    color: #2C3E50;
 }
 
 /* ── UPLOAD AREA ── */
 [data-testid="stFileUploader"] {
-    border: 2px dashed #6366f1;
+    border: 2px dashed #D35400;
     border-radius: 20px;
     padding: 1.4rem;
-    background: rgba(99, 102, 241, 0.06);
+    background: rgba(211, 84, 0, 0.04);
     transition: all .25s ease;
 }
 [data-testid="stFileUploader"]:hover {
-    border-color: #818cf8;
-    background: rgba(99, 102, 241, 0.12);
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
+    border-color: #E67E22;
+    background: rgba(211, 84, 0, 0.08);
+    box-shadow: 0 0 30px rgba(211, 84, 0, 0.1);
 }
 
 /* ── IMAGE PREVIEW ── */
 [data-testid="stImage"] {
     border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.15);
     margin: 0.8rem 0;
 }
 
@@ -84,21 +86,22 @@ body, .stApp {
 div.stButton > button {
     width: 100% !important;
     max-width: 100% !important;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a855f7 100%);
+    background: linear-gradient(135deg, #D35400 0%, #E67E22 100%);
     color: white !important;
-    font-weight: 800;
+    font-family: 'Lato', sans-serif;
+    font-weight: 900;
     font-size: 1.15rem;
     letter-spacing: 0.5px;
     border: none;
     border-radius: 14px;
     padding: 0.85rem 2rem;
     margin-top: 0.6rem;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 4px 20px rgba(211, 84, 0, 0.25);
     transition: all .25s ease;
 }
 div.stButton > button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 8px 30px rgba(211, 84, 0, 0.35);
     color: white !important;
 }
 div.stButton > button:active {
@@ -107,13 +110,13 @@ div.stButton > button:active {
 
 /* ── RESULT CARD ── */
 .result-card {
-    background: linear-gradient(145deg, #1e1b4b 0%, #1e293b 50%, #172234 100%);
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: #FFFFFF;
+    border: 1px solid rgba(211, 84, 0, 0.15);
     border-radius: 22px;
     padding: 2rem 2.2rem;
     margin-top: 1.5rem;
     margin-bottom: 2rem;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.08);
     animation: slideUp 0.5s ease-out;
 }
 @keyframes slideUp {
@@ -121,23 +124,23 @@ div.stButton > button:active {
     to   { opacity: 1; transform: translateY(0); }
 }
 .dish-name {
+    font-family: 'Playfair Display', serif;
     font-size: 2.4rem;
-    font-weight: 900;
-    letter-spacing: -1px;
-    background: linear-gradient(90deg, #f1f5f9, #e2e8f0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #2C3E50;
     margin-bottom: 0.4rem;
 }
 .confidence-badge {
     display: inline-block;
-    background: linear-gradient(90deg, rgba(34, 197, 94, 0.15), rgba(74, 222, 128, 0.1));
-    color: #4ade80;
+    background: rgba(39, 174, 96, 0.15);
+    color: #27AE60;
+    font-family: 'Lato', sans-serif;
     font-weight: 700;
     padding: 0.3rem 0.9rem;
     border-radius: 999px;
     font-size: 0.9rem;
-    border: 1px solid rgba(74, 222, 128, 0.2);
+    border: 1px solid rgba(39, 174, 96, 0.3);
     margin-bottom: 1.2rem;
 }
 
@@ -151,30 +154,32 @@ div.stButton > button:active {
 .macro-pill {
     flex: 1;
     text-align: center;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(71, 85, 105, 0.4);
+    background: #F9F7F2;
+    border: 1px solid rgba(211, 84, 0, 0.12);
     border-radius: 16px;
     padding: 1.1rem 0.5rem;
     transition: all .2s ease;
 }
 .macro-pill:hover {
     transform: translateY(-3px);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    border-color: rgba(211, 84, 0, 0.35);
+    box-shadow: 0 6px 20px rgba(211, 84, 0, 0.1);
 }
 .macro-icon {
     font-size: 1.4rem;
     margin-bottom: 0.25rem;
 }
 .macro-value {
+    font-family: 'Lato', sans-serif;
     font-size: 1.7rem;
-    font-weight: 800;
+    font-weight: 900;
     line-height: 1.2;
 }
 .macro-label {
-    color: #94a3b8;
+    color: #5D6D7E;
+    font-family: 'Lato', sans-serif;
     font-size: 0.78rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-top: 0.15rem;
@@ -183,14 +188,70 @@ div.stButton > button:active {
 /* ── FOOTER ── */
 .footer-text {
     text-align: center;
-    color: #475569;
+    color: #5D6D7E;
+    font-family: 'Lato', sans-serif;
     font-size: 0.8rem;
     padding: 2rem 0 1rem;
 }
 
-/* ── STATUS WIDGET ── */
+/* ── STATUS WIDGET & STREAMLIT OVERRIDES ── */
 [data-testid="stStatusWidget"] {
     border-radius: 16px;
+}
+
+/* Force light backgrounds on all Streamlit internal widgets */
+[data-testid="stExpander"],
+[data-testid="stAlert"],
+[data-testid="stNotification"],
+.stAlert, .stStatus {
+    background-color: #EDE8DF !important;
+    color: #2C3E50 !important;
+}
+
+/* Status container ("Analysing…" / "Done!") */
+details[data-testid="stExpander"],
+[data-testid="stStatusWidget"],
+div[data-testid="stExpander"] {
+    background-color: #EDE8DF !important;
+    border: 1px solid rgba(211, 84, 0, 0.2) !important;
+    border-radius: 16px !important;
+    color: #2C3E50 !important;
+}
+
+details[data-testid="stExpander"] summary,
+details[data-testid="stExpander"] div {
+    color: #2C3E50 !important;
+}
+
+/* File uploader internal (drag-and-drop area text & background) */
+[data-testid="stFileUploader"] section {
+    background-color: transparent !important;
+    color: #2C3E50 !important;
+}
+[data-testid="stFileUploader"] section > div {
+    color: #5D6D7E !important;
+}
+[data-testid="stFileUploader"] button {
+    background-color: #EDE8DF !important;
+    color: #2C3E50 !important;
+    border: 1px solid rgba(211, 84, 0, 0.3) !important;
+}
+
+/* Caption (model version badge) */
+[data-testid="stCaptionContainer"] {
+    color: #5D6D7E !important;
+}
+
+/* Warning/error messages */
+[data-testid="stAlert"] {
+    background-color: #EDE8DF !important;
+    color: #2C3E50 !important;
+    border-radius: 12px !important;
+}
+
+/* Markdown text */
+p, span, label, div {
+    font-family: 'Lato', sans-serif;
 }
 
 /* ── MOBILE RESPONSIVE ── */
@@ -306,22 +367,22 @@ if analyse_clicked:
                         <div class="macros-row">
                             <div class="macro-pill">
                                 <div class="macro-icon">🔥</div>
-                                <div class="macro-value" style="color:#fb923c;">{nutrition['calories']}</div>
+                                <div class="macro-value" style="color:#D35400;">{nutrition['calories']}</div>
                                 <div class="macro-label">Calories</div>
                             </div>
                             <div class="macro-pill">
                                 <div class="macro-icon">💪</div>
-                                <div class="macro-value" style="color:#60a5fa;">{nutrition['protein_g']}g</div>
+                                <div class="macro-value" style="color:#27AE60;">{nutrition['protein_g']}g</div>
                                 <div class="macro-label">Protein</div>
                             </div>
                             <div class="macro-pill">
                                 <div class="macro-icon">🌾</div>
-                                <div class="macro-value" style="color:#facc15;">{nutrition['carbs_g']}g</div>
+                                <div class="macro-value" style="color:#2980B9;">{nutrition['carbs_g']}g</div>
                                 <div class="macro-label">Carbs</div>
                             </div>
                             <div class="macro-pill">
                                 <div class="macro-icon">🥑</div>
-                                <div class="macro-value" style="color:#f87171;">{nutrition['fat_g']}g</div>
+                                <div class="macro-value" style="color:#E67E22;">{nutrition['fat_g']}g</div>
                                 <div class="macro-label">Fat</div>
                             </div>
                         </div>
