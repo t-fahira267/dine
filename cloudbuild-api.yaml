@@ -6,13 +6,12 @@ substitutions:
   _REPO: cloud-run-source-deploy
   _SERVICE: dine-api
   _GCS_BUCKET: mmfood
-  _GCS_MODEL_PREFIX: models/v1
+  _MODEL_VERSION: demo_v11.0
 
 steps:
-  # Download model artifacts into api/model/ so they are baked into the image.
-  # This avoids any GCS download at container startup, which would exceed Cloud Run's health-check timeout.
+  # Download model artifacts into api/model/<version>/ so they are baked into the image.
   - name: gcr.io/cloud-builders/gsutil
-    args: ["-m", "cp", "-r", "gs://${_GCS_BUCKET}/${_GCS_MODEL_PREFIX}/*", "api/model/"]
+    args: ["-m", "cp", "-r", "gs://${_GCS_BUCKET}/models/${_MODEL_VERSION}/*", "api/model/${_MODEL_VERSION}/"]
 
   - name: gcr.io/cloud-builders/docker
     args: ["build", "-t", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/dine-api:$SHORT_SHA", "-f", "api/Dockerfile", "."]
@@ -31,5 +30,5 @@ steps:
         "--allow-unauthenticated",
         "--memory","2Gi",
         "--cpu","1",
-        "--set-env-vars","GCS_BUCKET=${_GCS_BUCKET},GCS_MODEL_PREFIX=${_GCS_MODEL_PREFIX}"
+        "--set-env-vars","GCS_BUCKET=${_GCS_BUCKET},MODEL_VERSION=${_MODEL_VERSION}"
       ]

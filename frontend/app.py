@@ -9,6 +9,7 @@ _LOGO_PATH = Path(__file__).parent / "logo.svg"
 _LOGO_B64 = base64.b64encode(_LOGO_PATH.read_bytes()).decode() if _LOGO_PATH.exists() else ""
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
+APP_ENV      = os.getenv("APP_ENV", "DEV")
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -326,6 +327,10 @@ if analyse_clicked:
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
+
+                    if APP_ENV != "PROD":
+                        model_version = result.get("model_version", "unknown")
+                        st.caption(f"🧪 Model: {model_version}")
 
             except requests.exceptions.Timeout:
                 status.update(label="Timeout", state="error")
