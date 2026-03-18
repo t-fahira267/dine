@@ -70,4 +70,4 @@ upload_gcs:
 dataset: prepare_candidates download_subset upload_gcs
 
 clean_dataset:
-	@python -m scripts.create_dataset
+	@python -m dine.data.create_dataset

@@ -16,6 +16,7 @@ Caching is also available
 
 import os
 import io
+import re
 import pandas as pd
 import json
 import requests
@@ -92,14 +93,6 @@ def create_dataset(save_mode="local"):
         "metadata.json"
     )
 
-    # -----------------------------
-    # GLOBAL SKIP (fully complete)
-    # -----------------------------
-    if save_mode == "local":
-        if os.path.exists(labels_csv_path) and os.path.exists(metadata_path):
-            print("Dataset already complete. Skipping creation.")
-            return pd.read_csv(labels_csv_path).to_dict("records")
-
     labels_rows = []
 
     bucket = None
@@ -172,65 +165,121 @@ def create_dataset(save_mode="local"):
             for i, row in enumerate(dish_data):
                 filename = f"{i:06d}.jpg"
 
+                # Build image path first (for BOTH cached & new images)
+                if save_mode == "local":
+                    image_path = f"{DATASET_VERSION}/images/{label}/{filename}"
+                    image_local_path = os.path.join(
+                        BASE_DATA_DIR,
+                        image_path
+                    )
+                    cached = os.path.exists(image_local_path)
+
+                else:  # gcs
+                    blob_path = f"{DATASET_VERSION}/images/{label}/{filename}"
+                    image_path = f"gs://{bucket.name}/{blob_path}"
+                    blob = bucket.blob(blob_path)
+                    cached = blob.exists()
+
                 try:
-                    # -----------------------------------
-                    # PER-IMAGE CACHE CHECK
-                    # -----------------------------------
-                    if save_mode == "local":
-                        image_local_path = os.path.join(
-                            BASE_DATA_DIR,
-                            DATASET_VERSION,
-                            "images",
-                            label,
-                            filename
-                        )
-
-                        if os.path.exists(image_local_path):
+                    # -----------------------------
+                    # Download ONLY if not cached
+                    # -----------------------------
+                    if not cached:
+                        url = row.get("image_url")
+                        if not isinstance(url, str):
+                            pbar.update(1)
                             continue
 
-                    elif save_mode == "gcs":
-                        blob_path = f"{DATASET_VERSION}/images/{label}/{filename}"
-                        blob = bucket.blob(blob_path)
-                        if blob.exists():
-                            continue
+                        response = session.get(url, timeout=15)
+                        response.raise_for_status()
 
-                    # -----------------------------------
-                    # Download image
-                    # -----------------------------------
-                    url = row.get("image_url")
-                    if not isinstance(url, str):
+                        img = Image.open(io.BytesIO(response.content)).convert("RGB")
+
+                        if save_mode == "local":
+                            save_local(img, label, filename)
+                        else:
+                            save_gcs(img, label, filename, bucket)
+
                         pbar.update(1)
-                        continue
 
-                    response = session.get(url, timeout=15)
-                    response.raise_for_status()
-
-                    img = Image.open(io.BytesIO(response.content)).convert("RGB")
-
-                    if save_mode == "local":
-                        image_path = save_local(img, label, filename)
-                    else:
-                        image_path = save_gcs(img, label, filename, bucket)
-
-                    portion_size = row.get("portion_size", None)
-                    nutritional_profile = row.get("nutritional_profile", None)
-
+                    # -----------------------------
+                    # ALWAYS append label row
+                    # -----------------------------
                     labels_rows.append({
                         "image_path": image_path,
                         "label": label,
-                        "portion_size": portion_size,
-                        "nutritional_profile": nutritional_profile
+                        "portion_size": row.get("portion_size", None),
+                        "nutritional_profile": row.get("nutritional_profile", None)
                     })
 
                 except Exception as e:
                     print("Failed:", e)
-
-                finally:
-                    pbar.update(1)
-
+                    if not cached:
+                        pbar.update(1)
     session.close()
 
     return labels_rows
+
+def clean_labels_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Clean labels dataframe:
+    - Expand nutritional_profile JSON into flat columns
+    - Parse portion_size and compute portion_grams
+    - Drop raw JSON columns
+    """
+
+    df = df.copy()
+
+    # -----------------------------------
+    # 1. Expand "nutritional_profile" JSON
+    # -----------------------------------
+    def safe_json_load(x):
+        if isinstance(x, str):
+            try:
+                return json.loads(x)
+            except Exception:
+                return {}
+        elif isinstance(x, dict):
+            return x
+        return {}
+
+    df["nutritional_profile"] = df["nutritional_profile"].apply(safe_json_load)
+
+    nutri_df = pd.json_normalize(df["nutritional_profile"])
+
+    df = pd.concat(
+        [df.drop(columns=["nutritional_profile"]), nutri_df],
+        axis=1
+    )
+
+    # -----------------------------------
+    # 2. Clean "portion_size"
+    # -----------------------------------
+    def safe_list_load(x):
+        if isinstance(x, str):
+            try:
+                return json.loads(x)
+            except Exception:
+                return []
+        elif isinstance(x, list):
+            return x
+        return []
+
+    df["portion_size"] = df["portion_size"].apply(safe_list_load)
+
+    def sum_grams(ingredients):
+        total = 0.0
+        for item in ingredients:
+            match = re.search(r"(\d+(?:\.\d+)?)g", str(item))
+            if match:
+                total += float(match.group(1))
+        return total
+
+    df["portion_grams"] = df["portion_size"].apply(sum_grams)
+
+    df = df.drop(columns=["portion_size"])
+
+    return df
 
 
 if __name__ == "__main__":
@@ -238,17 +287,18 @@ if __name__ == "__main__":
     # ---- Pre-check version existence ----
     if SAVE_MODE == "local":
         version_path = os.path.join(BASE_DATA_DIR, DATASET_VERSION)
-        if os.path.exists(version_path):
-            raise ValueError(f"Dataset version {DATASET_VERSION} already exists.")
 
     elif SAVE_MODE == "gcs":
         bucket = storage.Client().bucket(GCS_BUCKET_NAME)
-        if bucket.blob(f"{DATASET_VERSION}/labels.csv").exists():
-            raise ValueError(f"Dataset version {DATASET_VERSION} already exists in GCS.")
 
     # ---- Create dataset ----
     labels = create_dataset(save_mode=SAVE_MODE)
     labels_df = pd.DataFrame(labels)
+
+    if labels_df.empty:
+        raise ValueError("No samples were created. Check filtering or image downloads.")
+
+    labels_df = clean_labels_dataframe(labels_df)
 
     if labels_df.empty:
         raise ValueError("No samples were created. Check filtering or image downloads.")

@@ -5,8 +5,17 @@ substitutions:
   _REGION: asia-northeast1
   _REPO: cloud-run-source-deploy
   _SERVICE: dine-api
+  _GCS_BUCKET: mmfood
+  _MODEL_VERSION: demo_v11.0
 
 steps:
+  # Create destination dir and download model artifacts so they are baked into the image.
+  - name: bash
+    args: ["mkdir", "-p", "api/model/${_MODEL_VERSION}"]
+
+  - name: gcr.io/cloud-builders/gsutil
+    args: ["-m", "cp", "-r", "gs://${_GCS_BUCKET}/models/${_MODEL_VERSION}/*", "api/model/${_MODEL_VERSION}/"]
+
   - name: gcr.io/cloud-builders/docker
     args: ["build", "-t", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/dine-api:$SHORT_SHA", "-f", "api/Dockerfile", "."]
 
@@ -21,5 +30,8 @@ steps:
         "--image","${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/dine-api:$SHORT_SHA",
         "--region","${_REGION}",
         "--platform","managed",
-        "--allow-unauthenticated"
+        "--allow-unauthenticated",
+        "--memory","2Gi",
+        "--cpu","1",
+        "--set-env-vars","GCS_BUCKET=${_GCS_BUCKET},MODEL_VERSION=${_MODEL_VERSION}"
       ]
