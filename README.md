@@ -1,10 +1,10 @@
 # 🥗 DINE: Dish Image Nutrition Estimator
 
 _**Snap a photo, know your nutrition!**_
-<br>A deep learning-based web app to estimate the nutritional calories and macros (Protein, Fat, Carbs) from a
-<br> photo of food dish
+<br>A deep learning-based web app to estimate the nutritional calories and
+<br> macros (Protein, Fat, Carbs) from a photo of food dish
 
-![dine-app-demo](img/dine-demo_gif.gif)
+<img src="img/dine-demo_gif_XL.gif" width="500">
 <br>
 App home: https://dine-frontend-832976041925.asia-northeast1.run.app
 
@@ -35,7 +35,8 @@ Defined in two files:
 2. local `.env` : Local parameters and secrets stored here. DO NOT PUSH TO REPO
 
 ## Loading local variables
-Make sure that direnv has been installed and `.envrc` file is available in project root directory
+Make sure that direnv has been installed and `.envrc` file is available in the
+<br>project's root directory
 
 Create `.env` file, and add some default parameters
 ```bash
