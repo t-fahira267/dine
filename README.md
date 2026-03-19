@@ -58,14 +58,24 @@ GCS Bucket location:
 gs://mmfood/
 ```
 
-### Run API server
-1. Deploy a container in GCP Cloud Run
-2. Connect Github repo `master` branch
+### Run API Server
+
+1. Trigger is automated via `cloudbuild-api.yaml` in the root folder
+On merge to main, Google Cloud Build:
+
+- Downloads model artifacts from GCS (`gs://mmfood/models/`) into the image
+- Builds and pushes a Docker image to Artifact Registry
+- Deploys to Cloud Run service `dine-api` in `asia-northeast1`
 
 ### Run Frontend
-1. Deploy a container in GCP Cloud Run
-2. Connect Github repo `master` branch
 
+Trigger is automated via `cloudbuild-frontend.yaml` in the root folder
+On merge to main, Google Cloud Build:
+
+- Builds and pushes a Docker image to Artifact Registry
+- Deploys to Cloud Run service `dine-frontend` in `asia-northeast1`
+
+Both pipelines are connected to this repo via GCP Cloud Build triggers. No manual deployment steps are needed; just merge to main.
 
 ## Built With
 - [Tensorflow]() - Machine Learning & Model Development
