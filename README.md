@@ -80,7 +80,7 @@ Special thanks to our amazing TAs at Le Wagon, espcially Arnaud and Gabriel for 
 
 ## Team Members
 - [Tasha Fahira](www.linkedin.com/in/tashafahira)
-- Jose Manuel Garcia Portillo
+- [Jose Manuel Garcia Portillo](https://www.linkedin.com/in/josemanuelgp/)
 - Wang Li
 
 ## Contributing
