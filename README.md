@@ -60,7 +60,7 @@ gs://mmfood/
 
 ### Run API Server
 
-Trigger is automated via `cloudbuild-api.yaml` in the root folder
+Trigger is automated via `cloudbuild-api.yaml` in the root folder.
 On merge to main, Google Cloud Build:
 
 - Downloads model artifacts from GCS (`gs://mmfood/models/`) into the image
@@ -69,7 +69,7 @@ On merge to main, Google Cloud Build:
 
 ### Run Frontend
 
-Trigger is automated via `cloudbuild-frontend.yaml` in the root folder
+Trigger is automated via `cloudbuild-frontend.yaml` in the root folder.
 On merge to main, Google Cloud Build:
 
 - Builds and pushes a Docker image to Artifact Registry
